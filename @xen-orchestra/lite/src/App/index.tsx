@@ -166,6 +166,15 @@ const mdTheme = createTheme({
       main: '#ffc107',
     },
   },
+  typography: {
+    fontFamily: 'inter',
+    h5: {
+      fontWeight: 500,
+      fontSize: '1em',
+      fontStyle: 'medium',
+      lineHeight: '1.50em',
+    },
+  },
 })
 
 const FullPage = styledComponent.div`
