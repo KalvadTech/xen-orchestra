@@ -40,7 +40,7 @@ const DiskImport = decorate([
             if (
               extIndex >= 0 &&
               (type = name.slice(extIndex + 1).toLowerCase()) &&
-              (type === 'vmdk' || type === 'vhd')
+              (type === 'vmdk' || type === 'vhd' || type === 'iso')
             ) {
               let vmdkData
               if (type === 'vmdk') {
@@ -57,6 +57,14 @@ const DiskImport = decorate([
                   capacity: parsed.capacityBytes,
                 }
               }
+              console.log({
+                id: generateId(),
+                file,
+                name,
+                sr: this.state.sr,
+                type,
+                vmdkData,
+              })
 
               return {
                 id: generateId(),

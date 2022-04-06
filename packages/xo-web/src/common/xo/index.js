@@ -53,7 +53,7 @@ export const XEN_VIDEORAM_VALUES = [1, 2, 4, 8, 16]
 
 // ===================================================================
 
-export const isSrWritable = sr => sr && sr.content_type !== 'iso' && sr.size > 0
+export const isSrWritable = sr => sr && /*sr.content_type !== 'iso' &&*/ sr.size > 0
 export const isSrShared = sr => sr && sr.shared
 export const isVmRunning = vm => vm && vm.power_state === 'Running'
 
@@ -1667,6 +1667,7 @@ const importDisk = async ({ description, file, name, type, vmdkData }, sr) => {
       formData.append(l, blob, file.name)
     }
   }
+  console.log('got data ')
   const res = await _call('disk.import', {
     description,
     name,
@@ -1674,9 +1675,15 @@ const importDisk = async ({ description, file, name, type, vmdkData }, sr) => {
     type,
     vmdkData,
   })
+  console.log('_called(disk.import ', res)
   formData.append('file', file)
+  console.log('will post ', formData, file)
+
   const result = await post(res.$sendTo, formData)
-  const body = await result.json()
+  console.log('_posted ', result)
+  const text = await result.text()
+  console.log({ text })
+  const body = JSON.parse(text)
   if (result.status !== 200) {
     throw new Error(body.error.message)
   }

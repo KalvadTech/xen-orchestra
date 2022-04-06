@@ -199,12 +199,14 @@ async function handleImport(req, res, { type, name, description, vmdkData, srId,
             }
             size = footer.currentSize
           } else {
-            throw new JsonRpcError(`Unknown disk type, expected "vhd" or "vmdk", got ${type}`)
+            console.log(' TYPE ', { type })
+            vhdStream = part
+            //throw new JsonRpcError(`Unknown disk type, expected "vhd" or "vmdk", got ${type}`)
           }
           const vdi = await xapi.createVdi({
             name_description: description,
             name_label: name,
-            size,
+            size: 165675008,
             sr: srId,
           })
           try {
