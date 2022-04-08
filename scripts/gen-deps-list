@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+const DepTree = require('deptree')
+const semver = require('semver')
+const { getPackages } = require('./utils')
+const [, , rootPackageName, incrementLevel] = process.argv
+
+if (!['major', 'minor', 'patch'].includes(incrementLevel)) {
+  console.error('Usage: gen-deps-list <package-name> <increment-level>')
+  console.error('  package-name: package name to generate dependencies list for')
+  console.error('  increment-level: semver increment level to use (major, minor, patch)')
+  process.exit(1)
+}
+
+class Package {
+  constructor({ name, version, dependencies = {}, optionalDependencies = {}, peerDependencies = {} }) {
+    this.name = name
+    this.version = version
+    this.requiredDependencies = dependencies
+    this.optionalDependencies = optionalDependencies
+    this.peerDependencies = peerDependencies
+  }
+
+  hasRequiredDependency(name) {
+    return this.requiredDependencies.hasOwnProperty(name)
+  }
+
+  hasOptionalDependency(name) {
+    return this.optionalDependencies.hasOwnProperty(name)
+  }
+
+  hasPeerDependency(name) {
+    return this.peerDependencies.hasOwnProperty(name)
+  }
+
+  /**
+   * @param {Package} dependency
+   * @param {string} incrementLevel
+   * @returns {boolean}
+   */
+  shouldHandleDependency(dependency, incrementLevel) {
+    if (this.hasRequiredDependency(dependency.name) || this.hasOptionalDependency(dependency.name)) {
+      return true
+    }
+
+    if (!this.hasPeerDependency(dependency.name)) {
+      return false
+    }
+
+    if (['xo-web', 'xo-server', '@xen-orchestra/proxy'].includes(dependency.name)) {
+      return true
+    }
+
+    return !semver.satisfies(
+      semver.inc(dependency.version, incrementLevel),
+      this.peerDependencies[dependency.name],
+    )
+  }
+}
+
+async function main() {
+  /** @type {Package[]} */
+  const packages = (await getPackages(true))
+    .map((pkg) => new Package({ ...pkg.package }))
+
+  const rootPackage = packages.find(pkg => pkg.name === rootPackageName)
+
+  if (!rootPackage) {
+    console.error(`Package ${rootPackageName} not found`)
+    process.exit(1)
+  }
+
+  const depTree = new DepTree()
+
+  depTree.add(rootPackage.name)
+
+  const handlePackage = (handledPackage) => {
+    packages
+      .filter(pkg => pkg.shouldHandleDependency(handledPackage, incrementLevel))
+      .forEach(pkg => {
+        depTree.add(pkg.name, handledPackage.name)
+        handlePackage(pkg)
+      })
+  }
+
+  handlePackage(rootPackage)
+
+  depTree.resolve().forEach(name => console.log(`${name} ${incrementLevel}`))
+}
+
+main().catch(console.error)
