@@ -7,6 +7,8 @@
 
 > Users must be able to say: “Nice enhancement, I'm eager to test it”
 
+- [Backup] Feat Merge multiple VHD at once (PR [#6184](https://github.com/vatesfr/xen-orchestra/pull/6184))
+
 ### Bug fixes
 
 > Users must be able to say: “I had this issue, happy to know it's fixed”
@@ -34,5 +36,6 @@
 
 - xen-api minor
 - xo-vmdk-to-vhd minor
-- @xen-orchestra/proxy patch
+- @xen-orchestra/backup minor
+- @xen-orchestra/proxy minor
 - xo-server patch
